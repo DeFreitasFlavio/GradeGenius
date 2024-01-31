@@ -1,24 +1,23 @@
 version: '3'
 services:
-  back_app:
-    depends_on:
-      - mongodb
-    restart: always
-    build: .
-    ports:
-      - '8080:3000'
-    environment:
-      - MONGODB_URL=mongodb://mongodb:27017
-    volumes:
-      - /usr/src/app/node_modules
-
   mongodb:
-    image: mongo
+    image: mongo:latest
     container_name: db_mongo
     volumes:
-      - /mongodata:/data/db
+      - ./mongo_data:/data/db
     ports:
       - '27017:27017'
 
-volumes:
-  mongodata:
+  back_app:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:3000'
+    environment:
+      - MONGODB_URL=process.env.MONGODB_URL
+    volumes:
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
