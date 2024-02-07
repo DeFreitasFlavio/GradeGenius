@@ -1,7 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Users } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class AuthService {
@@ -10,7 +16,21 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
+  decodeJwt(token: string): string {
+    try {
+      const decoded = this.jwtService.decode(token);
+      return decoded.id;
+      if (typeof decoded === 'object' && decoded.hasOwnProperty('userId')) {
+        return decoded['userId'];
+      } else {
+        throw new UnauthorizedException('Invalid token');
+      }
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  async validateUser(email: string, pass: string): Promise<Users> {
     const user = await this.usersService.findOneByEmail(email);
     /* if (user?.password !== pass) {
       throw new UnauthorizedException();
@@ -20,8 +40,8 @@ export class AuthService {
     } */
     if (user && bcrypt.compareSync(pass, user.password)) {
       const { password, ...result } = user;
-      console.log(password);
-      return result;
+      console.log(result);
+      return user;
     }
     return null;
   }
@@ -31,18 +51,20 @@ export class AuthService {
     if (!user) {
       throw new HttpException('Account does not exist', HttpStatus.FORBIDDEN);
     }
-    const payload = { id: user.id };
+    const payload = { id: user.userID };
+    console.log(payload);
+    console.log({
+      access_token: this.jwtService.sign(payload),
+      token_type: 'Bearer',
+    });
     return {
       access_token: this.jwtService.sign(payload),
-      token_type: ' Bearer',
+      token_type: 'Bearer',
     };
   }
 
-  async register(id: string) {
-    const payload = { id: id };
-    return {
-      access_token: this.jwtService.sign(payload),
-      token_type: ' Bearer',
-    };
+  async generateJwtToken(userId: string): Promise<{ access_token: string }> {
+    const payload = { userId }; // Include user ID in the payload
+    return { access_token: this.jwtService.sign(payload) };
   }
 }

@@ -3,14 +3,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
+import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     forwardRef(() => UsersModule),
+    PassportModule,
     JwtModule.register({
-      secret:
-        '81db91b4118f446a92a8c47f40f99ff672f73dfdfc7a7d52dda622f20edecfec', // Use environment variable for secret key
-      signOptions: { expiresIn: '1h' },
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '3d' },
     }),
   ],
   providers: [AuthService, JwtStrategy],

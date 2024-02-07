@@ -19,5 +19,6 @@ services:
       - MONGODB_URL=process.env.MONGODB_URL
     volumes:
       - /usr/src/app/node_modules
+      - ./src:/home/node/src
     depends_on:
       - mongodb

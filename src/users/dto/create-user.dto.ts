@@ -3,21 +3,30 @@ import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
-  @ApiProperty({ description: 'required' })
+  @ApiProperty({ description: 'Required', example: 'John Doe' })
   name: string;
 
   @IsNotEmpty()
   @IsEmail()
-  @ApiProperty({ description: 'type Email, must be unique' })
+  @ApiProperty({
+    description: 'Email address (must be unique)',
+    example: 'john@example.com',
+  })
   email: string;
 
   @IsNotEmpty()
   @MinLength(8)
-  @ApiProperty({ description: 'need 8 characters minimum' })
+  @ApiProperty({
+    description: 'Password (minimum 8 characters)',
+    example: 'password123',
+  })
   password: string;
 
   @IsNotEmpty()
   @MinLength(8)
-  @ApiProperty({ description: 'required' })
-  confirmpassword: string;
+  @ApiProperty({
+    description: 'Confirm password (must match password)',
+    example: 'password123',
+  })
+  confirmPassword: string;
 }
